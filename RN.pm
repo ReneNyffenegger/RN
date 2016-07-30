@@ -27,7 +27,8 @@ sub url_path_abs_2_url_full { # {{{
 
 
   if ($target_env eq 'prod' or $target_env eq 'test') {
-    return "http://renenyffenegger.ch$url_path_abs";
+#   return "http://renenyffenegger.ch$url_path_abs";
+    return $url_path_abs;
   }
 
   if ($target_env eq 'local') {
