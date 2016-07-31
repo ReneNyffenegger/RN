@@ -7,11 +7,20 @@ use File::Path qw(make_path);
 use File::Basename;
 use File::Copy;
 
+use lib "$ENV{git_work_dir}renenyffenegger.ch/notes/";
+use tq84_ftp;
+
 my $target_env; # local, test or web
+
+my $ftp;
 
 sub init {
   $target_env = shift;
   die "Unknown target_env $target_env" unless $target_env eq 'local' or $target_env eq 'test' or $target_env eq 'web';
+
+  if ($target_env eq 'web') {
+    $ftp = new tq84_ftp('TQ84_RN');
+  }
 }
 
 sub url_path_abs_2_os_path_abs { # {{{
@@ -26,8 +35,7 @@ sub url_path_abs_2_url_full { # {{{
   my $url_path_abs = shift;
 
 
-  if ($target_env eq 'prod' or $target_env eq 'test') {
-#   return "http://renenyffenegger.ch$url_path_abs";
+  if ($target_env eq 'web' or $target_env eq 'test') {
     return $url_path_abs;
   }
 
@@ -45,7 +53,14 @@ sub ensure_dir_for_url_path_abs { # {{{
 
 
   if ($target_env eq 'web') {
-    die "Implement me"
+
+    my $dir = "/httpdocs" . dirname($url_path_abs);
+
+    if ($ftp->isfile($dir)) {
+      print "! ftp ensure_dir_for_url_path_abs, $dir is a file\n";
+    }
+
+    $ftp -> mkdir($dir, 1); # or die "Could not create directory $dir";
   }
   elsif ($target_env eq 'local' or $target_env eq 'test') {
 
@@ -72,20 +87,31 @@ sub open_url_path_abs { # {{{
 
   my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
 
-  open (my $out, '>:encoding(UTF-8)', $os_path_abs) or die "\nCould not open $os_path_abs" ;
+  open (my $out, '>:encoding(UTF-8)', $os_path_abs) or print "! RN::open_url_path_abs Could not open $os_path_abs" ;
 
   return $out;
 } # }}}
 
-sub copy_os_path_2_url_path_abs {
+sub copy_os_path_2_url_path_abs { # {{{
 
   my $os_path_src       = shift; # can be relativ or absolute
   my $url_path_dest_abs = shift;
 
   die "$os_path_src does not exist" unless -e $os_path_src;
 
-  if ($target_env eq 'prod') {
-     die "Implement me";
+  if ($target_env eq 'web') {
+    my $dir  =  "/httpdocs" . dirname($url_path_dest_abs);
+
+    if ($ftp->isfile($dir)) {
+      print "! ftp $dir is a file, should be a directory\n";
+    }
+    if (! $ftp->isdir($dir)) {
+      print "! ftp $dir is not a directory, creating...\n";
+      $ftp -> mkdir($dir, 1);
+    }
+
+    $ftp->cwd($dir) or print "! ftp could not cwd to $dir\n";
+    $ftp->put($os_path_src) or print "! ftp could not put $os_path_src\n";
   }
   elsif ($target_env eq 'test' or $target_env eq 'local') {
 
@@ -100,6 +126,6 @@ sub copy_os_path_2_url_path_abs {
     die "Unknown target_env $target_env";
   }
 
-}
+} # }}}
 
 1;
