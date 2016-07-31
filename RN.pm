@@ -14,6 +14,8 @@ my $target_env; # local, test or web
 
 my $ftp;
 
+my %fh_to_url_path_abs;
+
 sub init {
   $target_env = shift;
   die "Unknown target_env $target_env" unless $target_env eq 'local' or $target_env eq 'test' or $target_env eq 'web';
@@ -51,6 +53,7 @@ sub ensure_dir_for_url_path_abs { # {{{
 
   my $url_path_abs = shift;
 
+  die "Unknown target_env $target_env" unless $target_env eq 'local' or $target_env eq 'test' or $target_env eq 'web';
 
   if ($target_env eq 'web') {
 
@@ -62,17 +65,12 @@ sub ensure_dir_for_url_path_abs { # {{{
 
     $ftp -> mkdir($dir, 1); # or die "Could not create directory $dir";
   }
-  elsif ($target_env eq 'local' or $target_env eq 'test') {
 
-    my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
-    my $os_dir      = dirname($os_path_abs);
+  my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
+  my $os_dir      = dirname($os_path_abs);
 
-    unless (-d $os_dir) {
-      make_path($os_dir) or die "Could not make_path($os_dir)";
-    }
-  }
-  else {
-    die "Unknown target_env $target_env";
+  unless (-d $os_dir) {
+    make_path($os_dir) or die "Could not make_path($os_dir)";
   }
 
 } # }}}
@@ -86,10 +84,38 @@ sub open_url_path_abs { # {{{
   ensure_dir_for_url_path_abs($url_path_abs);
 
   my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
+  print "open_url_path_abs($url_path_abs): $os_path_abs\n";
 
-  open (my $out, '>:encoding(UTF-8)', $os_path_abs) or print "! RN::open_url_path_abs Could not open $os_path_abs" ;
+  open (my $out, '>:encoding(UTF-8)', $os_path_abs) or print "! RN::open_url_path_abs Could not open $os_path_abs\n" ;
+
+  $fh_to_url_path_abs{$out} = $url_path_abs;
 
   return $out;
+} # }}}
+
+sub close_ { # {{{
+
+  my $fh = shift;
+
+  die "fh not found in fh_to_url_path_abs" unless exists $fh_to_url_path_abs{$fh};
+
+  my $url_path_abs = $fh_to_url_path_abs{$fh};
+  delete $fh_to_url_path_abs{$fh};
+
+  close $fh;
+
+  if ($target_env eq 'local' or $target_env eq 'test') {
+    return;
+  }
+
+  die "Unknown target_env $target_env" unless $target_env eq 'web';
+
+  my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
+
+  print "CCC $os_path_abs -> $url_path_abs\n";
+
+  RN::copy_os_path_2_url_path_abs($os_path_abs, $url_path_abs);
+
 } # }}}
 
 sub copy_os_path_2_url_path_abs { # {{{
@@ -120,6 +146,26 @@ sub copy_os_path_2_url_path_abs { # {{{
     ensure_dir_for_url_path_abs($url_path_dest_abs);
 
     copy($os_path_src, $os_path_dest_abs) or die "Could not copy $os_path_src to $os_path_dest_abs";
+
+  }
+  else {
+    die "Unknown target_env $target_env";
+  }
+
+} # }}}
+
+sub copy_url_path_abs_2_os_path { # {{{
+
+  my $url_path_src_abs = shift;
+  my $os_path_dest     = shift; # can be relativ or absolute
+
+
+  if ($target_env eq 'web') {
+    $ftp->get("/httpdocs$url_path_src_abs", $os_path_dest) or print "! ftp could not get $url_path_src_abs\n";
+  }
+  elsif ($target_env eq 'test' or $target_env eq 'local') {
+
+    die "Implement me";
 
   }
   else {
