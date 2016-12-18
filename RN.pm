@@ -42,7 +42,10 @@ sub url_path_abs_2_url_full { # {{{
   }
 
   if ($target_env eq 'local') {
-    return "file://" . url_path_abs_2_os_path_abs($url_path_abs);
+# 2016-08-01  return "file://" . url_path_abs_2_os_path_abs($url_path_abs);
+    my $url_full =  "file://" . url_path_abs_2_os_path_abs($url_path_abs);
+    $url_full =~ s,\\,/,g;
+    return $url_full;
   }
 
   die "Unknown target_env $target_env";
