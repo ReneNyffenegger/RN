@@ -70,6 +70,10 @@ sub ensure_dir_for_url_path_abs { # {{{
   my $os_dir      = dirname($os_path_abs);
 
   unless (-d $os_dir) {
+    if (-e $os_dir) {
+    # 2016-12-18
+      unlink $os_dir or die "Could not unlink $os_dir";
+    }
     make_path($os_dir) or die "Could not make_path($os_dir)";
   }
 
