@@ -16,9 +16,15 @@ my $ftp;
 
 my %fh_to_url_path_abs;
 
+my $verbose;
+
 sub init {
   $target_env = shift;
+  $verbose    = shift;
+
   die "Unknown target_env $target_env" unless $target_env eq 'local' or $target_env eq 'test' or $target_env eq 'web';
+
+  print "RN: target_env=$target_env\n" if $verbose >= 1;
 
   if ($target_env eq 'web') {
     $ftp = new tq84_ftp('TQ84_RN');
@@ -91,7 +97,7 @@ sub open_url_path_abs { # {{{
   ensure_dir_for_url_path_abs($url_path_abs);
 
   my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
-  print "open_url_path_abs($url_path_abs): $os_path_abs\n";
+# print "open_url_path_abs($url_path_abs): $os_path_abs\n";
 
   open (my $out, '>:encoding(UTF-8)', $os_path_abs) or print "! RN::open_url_path_abs Could not open $os_path_abs\n" ;
 
