@@ -1,3 +1,4 @@
+# vim: foldmarker={{{,}}} foldmethod=marker
 package RN;
 
 use warnings;
@@ -18,7 +19,7 @@ my %fh_to_url_path_abs;
 
 my $verbose;
 
-sub init {
+sub init { # {{{
   $target_env = shift;
   $verbose    = shift;
 
@@ -29,7 +30,7 @@ sub init {
   if ($target_env eq 'web') {
     $ftp = new tq84_ftp('TQ84_RN');
   }
-}
+} # }}}
 
 sub url_path_abs_2_os_path_abs { # {{{
 
@@ -48,7 +49,6 @@ sub url_path_abs_2_url_full { # {{{
   }
 
   if ($target_env eq 'local') {
-# 2016-08-01  return "file://" . url_path_abs_2_os_path_abs($url_path_abs);
     my $url_full =  "file://" . url_path_abs_2_os_path_abs($url_path_abs);
     $url_full =~ s,\\,/,g;
     return $url_full;
@@ -97,7 +97,6 @@ sub open_url_path_abs { # {{{
   ensure_dir_for_url_path_abs($url_path_abs);
 
   my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
-# print "open_url_path_abs($url_path_abs): $os_path_abs\n";
 
   open (my $out, '>:encoding(UTF-8)', $os_path_abs) or print "! RN::open_url_path_abs Could not open $os_path_abs\n" ;
 
