@@ -11,7 +11,7 @@ use File::Copy;
 use lib "$ENV{git_work_dir}renenyffenegger.ch/notes/";
 use tq84_ftp;
 
-my $target_env; # local, test or web
+our $target_env; # local, test or web
 
 my $ftp;
 
