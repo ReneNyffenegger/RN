@@ -102,6 +102,7 @@ sub open_url_path_abs { # {{{
 
   $fh_to_url_path_abs{$out} = $url_path_abs;
 
+  print "RN.pm open_url_path_abs returning\n" if $verbose;
   return $out;
 } # }}}
 
@@ -138,6 +139,7 @@ sub copy_os_path_2_url_path_abs { # {{{
   die "$os_path_src does not exist" unless -e $os_path_src;
 
   if ($target_env eq 'web') {
+    print "RN::copy_os_path_2_url_path_abs, target env, ftp->pwd=" . $ftp->pwd() . "\n";
     my $dir  =  "/httpdocs" . dirname($url_path_dest_abs);
 
     if ($ftp->isfile($dir)) {
@@ -149,7 +151,31 @@ sub copy_os_path_2_url_path_abs { # {{{
     }
 
     $ftp->cwd($dir) or print "! ftp could not cwd to $dir\n";
-    $ftp->put($os_path_src) or print "! ftp could not put $os_path_src\n";
+    print "RN.pm Trying to put $os_path_src, ftp pwd=" . $ftp->pwd() . "\n" if $verbose;
+
+#
+#   2017-01-09 Swisscom … why oh why ?
+#   $ftp->put($os_path_src) or print "! ftp could not put $os_path_src, ftp pwd=" . $ftp->pwd() . "\n";
+#
+    my $put_successful = 0;
+    while (! $put_successful) {
+        eval {
+            local $SIG{ALRM} = sub { die "ftp-put-timeout" };
+            alarm 5;
+            print "tryng to put $os_path_src, ftp->pwd=" . $ftp->pwd() . "\n";
+            $put_successful = $ftp->put($os_path_src);
+            alarm 0;
+            print "put, put_successful = $put_successful, ftp-pwd=" . $ftp->pwd() . "\n";
+        };
+        if ($@) { # timed out
+            die "other error >$!< in ftp put timeout, \$\@ = >$@<" unless $@ =~/^ftp-put-timeout/;   # propagate unexpected errors
+            $ftp = new tq84_ftp('TQ84_RN');
+            $ftp->cwd($dir);
+            print "ftp put timed out, redo $os_path_src, ftp->pwd=" . $ftp->pwd() . "\n";
+        }
+
+    }
+
   }
   elsif ($target_env eq 'test' or $target_env eq 'local') {
 
