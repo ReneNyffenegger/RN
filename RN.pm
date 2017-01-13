@@ -139,7 +139,6 @@ sub copy_os_path_2_url_path_abs { # {{{
   die "$os_path_src does not exist" unless -e $os_path_src;
 
   if ($target_env eq 'web') {
-    print "RN::copy_os_path_2_url_path_abs, target env, ftp->pwd=" . $ftp->pwd() . "\n";
     my $dir  =  "/httpdocs" . dirname($url_path_dest_abs);
 
     if ($ftp->isfile($dir)) {
@@ -162,16 +161,14 @@ sub copy_os_path_2_url_path_abs { # {{{
         eval {
             local $SIG{ALRM} = sub { die "ftp-put-timeout" };
             alarm 5;
-            print "tryng to put $os_path_src, ftp->pwd=" . $ftp->pwd() . "\n";
             $put_successful = $ftp->put($os_path_src);
             alarm 0;
-            print "put, put_successful = $put_successful, ftp-pwd=" . $ftp->pwd() . "\n";
         };
         if ($@) { # timed out
             die "other error >$!< in ftp put timeout, \$\@ = >$@<" unless $@ =~/^ftp-put-timeout/;   # propagate unexpected errors
+            print "ftp put timed out, redo $os_path_src, ftp->pwd=" . $ftp->pwd() . "\n";
             $ftp = new tq84_ftp('TQ84_RN');
             $ftp->cwd($dir);
-            print "ftp put timed out, redo $os_path_src, ftp->pwd=" . $ftp->pwd() . "\n";
         }
 
     }
