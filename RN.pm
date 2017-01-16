@@ -8,7 +8,7 @@ use File::Path qw(make_path);
 use File::Basename;
 use File::Copy;
 
-use lib "$ENV{git_work_dir}renenyffenegger.ch/notes/";
+use lib "$ENV{github_top_root}lib/tq84-PerlModules";
 use tq84_ftp;
 
 our $target_env; # local, test or web
@@ -124,8 +124,6 @@ sub close_ { # {{{
   die "Unknown target_env $target_env" unless $target_env eq 'web';
 
   my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
-
-  print "CCC $os_path_abs -> $url_path_abs\n";
 
   RN::copy_os_path_2_url_path_abs($os_path_abs, $url_path_abs);
 
