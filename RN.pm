@@ -148,19 +148,21 @@ sub copy_os_path_2_url_path_abs { # {{{
     }
 
     $ftp->cwd($dir) or print "! ftp could not cwd to $dir\n";
-    print "RN.pm Trying to put $os_path_src, ftp pwd=" . $ftp->pwd() . "\n" if $verbose;
 
 #
 #   2017-01-09 Swisscom … why oh why ?
 #   $ftp->put($os_path_src) or print "! ftp could not put $os_path_src, ftp pwd=" . $ftp->pwd() . "\n";
 #
     my $put_successful = 0;
+    print "RN.pm Trying to ftp-rm $os_path_src, ftp pwd=" . $ftp->pwd() . "\n" if $verbose;
     while (! $put_successful) {
         eval {
             local $SIG{ALRM} = sub { die "ftp-put-timeout" };
+            print "RN.pm Trying to put $os_path_src, ftp pwd=" . $ftp->pwd() . "\n" if $verbose;
             alarm 5;
             $put_successful = $ftp->put($os_path_src);
             alarm 0;
+            print "RN.pm           put $os_path_src\n" if $verbose;
         };
         if ($@) { # timed out
             die "other error >$!< in ftp put timeout, \$\@ = >$@<" unless $@ =~/^ftp-put-timeout/;   # propagate unexpected errors
