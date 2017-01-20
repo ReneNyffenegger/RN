@@ -64,16 +64,17 @@ sub ensure_dir_for_url_path_abs { # {{{
 
   die "Unknown target_env $target_env" unless $target_env eq 'local' or $target_env eq 'test' or $target_env eq 'web';
 
-  if ($target_env eq 'web') {
-
-    my $dir = "/httpdocs" . dirname($url_path_abs);
-
-    if ($ftp->isfile($dir)) {
-      print "! ftp ensure_dir_for_url_path_abs, $dir is a file\n";
-    }
-
-    $ftp -> mkdir($dir, 1); # or die "Could not create directory $dir";
-  }
+# 2017-01-20
+# if ($target_env eq 'web') {
+#
+#   my $dir = "/httpdocs" . dirname($url_path_abs);
+#
+#   if ($ftp->isfile($dir)) {
+#     print "! ftp ensure_dir_for_url_path_abs, $dir is a file\n";
+#   }
+#
+#   $ftp -> mkdir($dir, 1); # or die "Could not create directory $dir";
+# }
 
   my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
   my $os_dir      = dirname($os_path_abs);
@@ -91,6 +92,7 @@ sub ensure_dir_for_url_path_abs { # {{{
 sub open_url_path_abs { # {{{
 
   my $url_path_abs = shift;
+  print "RN.pm open_url_path_abs($url_path_abs)\n" if $verbose;
 
   die "Unknown target_env $target_env" unless $target_env eq 'local' or $target_env eq 'test' or $target_env eq 'web';
 
@@ -136,7 +138,7 @@ sub copy_os_path_2_url_path_abs { # {{{
 
   die "$os_path_src does not exist" unless -e $os_path_src;
 
-  if ($target_env eq 'web') {
+  if ($target_env eq 'web') { # {{{
     my $dir  =  "/httpdocs" . dirname($url_path_dest_abs);
 
     if ($ftp->isfile($dir)) {
@@ -147,7 +149,11 @@ sub copy_os_path_2_url_path_abs { # {{{
       $ftp -> mkdir($dir, 1);
     }
 
-    $ftp->cwd($dir) or print "! ftp could not cwd to $dir\n";
+    if (!$ftp->cwd($dir)) {
+        die "RN.pm could not cwd to $dir,  See change of 2017-01-20";
+#       print "! ftp could not cwd to $dir\n";
+        return;
+    }
 
 #
 #   2017-01-09 Swisscom … why oh why ?
@@ -173,8 +179,8 @@ sub copy_os_path_2_url_path_abs { # {{{
 
     }
 
-  }
-  elsif ($target_env eq 'test' or $target_env eq 'local') {
+  } # }}}
+  elsif ($target_env eq 'test' or $target_env eq 'local') { # {{{
 
     my $os_path_dest_abs = url_path_abs_2_os_path_abs($url_path_dest_abs);
 
@@ -182,10 +188,10 @@ sub copy_os_path_2_url_path_abs { # {{{
 
     copy($os_path_src, $os_path_dest_abs) or die "Could not copy $os_path_src to $os_path_dest_abs";
 
-  }
-  else {
+  } # }}}
+  else { # {{{
     die "Unknown target_env $target_env";
-  }
+  } # }}}
 
 } # }}}
 
