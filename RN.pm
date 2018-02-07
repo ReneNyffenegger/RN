@@ -64,17 +64,6 @@ sub ensure_dir_for_url_path_abs { # {{{
 
   die "Unknown target_env $target_env" unless $target_env eq 'local' or $target_env eq 'test' or $target_env eq 'web';
 
-# 2017-01-20
-# if ($target_env eq 'web') {
-#
-#   my $dir = "/httpdocs" . dirname($url_path_abs);
-#
-#   if ($ftp->isfile($dir)) {
-#     print "! ftp ensure_dir_for_url_path_abs, $dir is a file\n";
-#   }
-#
-#   $ftp -> mkdir($dir, 1); # or die "Could not create directory $dir";
-# }
 
   my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
   my $os_dir      = dirname($os_path_abs);
@@ -139,7 +128,7 @@ sub copy_os_path_2_url_path_abs { # {{{
   die "$os_path_src does not exist" unless -e $os_path_src;
 
   if ($target_env eq 'web') { # {{{
-    my $dir  =  "/httpdocs" . dirname($url_path_dest_abs);
+    my $dir  =  "/httpsdocs" . dirname($url_path_dest_abs);
 
     if ($ftp->isfile($dir)) {
       print "! ftp $dir is a file, should be a directory\n";
@@ -202,7 +191,7 @@ sub copy_url_path_abs_2_os_path { # {{{
 
 
   if ($target_env eq 'web') {
-    $ftp->get("/httpdocs$url_path_src_abs", $os_path_dest) or print "! ftp could not get $url_path_src_abs\n";
+    $ftp->get("/httpsdocs$url_path_src_abs", $os_path_dest) or print "! ftp could not get $url_path_src_abs\n";
   }
   elsif ($target_env eq 'test' or $target_env eq 'local') {
 
