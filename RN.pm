@@ -19,6 +19,18 @@ my %fh_to_url_path_abs;
 
 my $verbose;
 
+BEGIN {
+  unless ($ENV{rn_root}) {
+    print  "
+    
+    Env variable rn_root not defined
+    --------------------------------
+    
+";
+    die;
+  }
+}
+
 sub init { # {{{
   $target_env = shift;
   $verbose    = shift;
