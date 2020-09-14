@@ -101,7 +101,7 @@ sub open_url_path_abs { # {{{
 
   my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
 
-  open (my $out, '>:encoding(UTF-8)', $os_path_abs) or print "! RN::open_url_path_abs Could not open $os_path_abs\n" ;
+  open (my $out, '>:unix:encoding(UTF-8)', $os_path_abs) or print "! RN::open_url_path_abs Could not open $os_path_abs\n" ;
 
   $fh_to_url_path_abs{$out} = $url_path_abs;
 
