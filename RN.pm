@@ -22,10 +22,10 @@ my $verbose;
 BEGIN {
   unless ($ENV{rn_root}) {
     print  "
-    
+
     Env variable rn_root not defined
     --------------------------------
-    
+
 ";
     die;
   }
@@ -101,6 +101,11 @@ sub open_url_path_abs { # {{{
 
   my $os_path_abs = url_path_abs_2_os_path_abs($url_path_abs);
 
+#
+# 2020-09-01/14: changed because wierd 0x0d 0x0a 0x0d treatment of downloaded gh-code:
+#
+# open (my $out, '>:encoding(UTF-8)'    , $os_path_abs) or print "! RN::open_url_path_abs Could not open $os_path_abs\n" ;
+# open (my $out, '>:raw(UTF-8)', $os_path_abs) or print "! RN::open_url_path_abs Could not open $os_path_abs\n" ;
   open (my $out, '>:unix:encoding(UTF-8)', $os_path_abs) or print "! RN::open_url_path_abs Could not open $os_path_abs\n" ;
 
   $fh_to_url_path_abs{$out} = $url_path_abs;
